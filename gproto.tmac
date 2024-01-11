@@ -1,11 +1,14 @@
 .\" -*- mode:nroff -*-
-.de gpro_remove_registers
-.  rr param_indent oldHY oldAD line_count max_line_len
+.\" Removes registers and strings/diversions that were created
+.\" during the running of cdef_start sequence.  Trying to leave
+.\" the environment like we found it.
+.de cdef_remove_registers
+.  rr param_indent oldHY oldAD line_count max_type_len
 .  rm type name
 .  rm enclosure left right separator end_glyph
 .  rm div_args div_types div_names
 ..
-.de gpro_start
+.de cdef_start
 .  ds type \\$1
 .  ds name \\$2
 .\" Determine enclosing glyphs
@@ -19,7 +22,7 @@
 .  ie \\n[.$]>3 .ds separator \\$4
 .  el .ds separator ,
 .\" Print type and name
-.  nop \\fB\\*[type]\\fP \\fI\\*[name]\\fP \\*[left] \\c
+.  nop \\fB\\*[type]\\fP \\fI\\*[name]\\fP \\*[left]\\c
 .\" Save horizontal position as indent value
 .  nr param_indent \\n[.i]+\\n[.k]
 .  br
@@ -31,7 +34,7 @@
 .  ad l
 .\" setup accumulator registers/diversions
 .  nr line_count 0
-.  nr max_line_len 0
+.  nr max_type_len 0
 .  di div_names
 .  di
 .  di div_types
@@ -39,50 +42,199 @@
 .  di div_args
 .  di
 ..
-.de gpro_arg
+.de cdef_arg
 .  ie \\n[.$]>2 .ds end_glyph \\ 
 .  el .ds end_glyph \\*[separator]
 .  ds type \\$1
 .  ds name \\$2
+.  nr len_type \\w'\\$1'
+.  nr len_name \\w'\\$2'
+.  length chars_name \\$2
+.br
 '\" Collect data for stacked
 '\" NOTE: the '\!' in diversions preserve the newline
 '\" push the environment to prevent diversion partial lines:
 .  ev @inarg
 .  da div_types
-\\! \\fB\\*[type]\\fP
+\\! \\fB\\*[type]\\fP\c
+.  ie ((\\n[chars_name]==0) & (\\n[.$]<3)) .nop \\*[separator]
+.  el .nop \\ 
 .  br
 .  di
 .  da div_names
-\\! \\fI\\*[name]\\fP\\*[end_glyph]
+.  ie \\n[chars_name] \{\
+\\! \\fI\\*[name]\\fP\c
+.    if \\n[.$]<3 .nop \\*[end_glyph]
+.  \}
+.  el \{\
+\\!
+.  \}
 .  br
 .  di
 '\" Diversion for running
 .  da div_args
-\\fB\\*[type]\\fP\ \\fI\\*[name]\\fP\\*[end_glyph]
+.  if \\n[.$]>0 .nop \\fB\\*[type]\\fP\c
+.  if (\\n[.$]>1 & \\n[len_name]>0) .nop \\ \\fI\\*[name]\\fP\c
+.  if !\\n[.$]>2 .nop \\*[separator]\c
 .  br
 .  di
 .  ev
 '\" Update cumulative values:
 .  nr line_count +1
-.  nr cur_line_len \\w'\\$1 '
-.  if \\n[cur_line_len]>\\n[max_line_len] .nr max_line_len \\n[cur_line_len]
+.  nr max_type_len \\n[max_type_len]>?\\n[len_type]
+'\" Discard local variables
+.  rm type name end_glyph
+.  rr len_type len_name
 ..
-.de gpro_end
+.de cdef_end
 .  div_args
-\\*[right];
+.  nop \\h'-2m'
+.  nop \\*[right]\\c
+.  if \\n[.$]>0 .nop \\ \\fI\\$1\\fP\\c
+\\&;
 .  br
-.  in   \" param_indent (from gpro_start)
-.  gpro_remove_registers
+.  in   \" param_indent (from cdef_start)
+.  cdef_remove_registers
 ..
-.de gpro_end_stacked
+.de cdef_end_stacked
 .\" print in columns, types then names
 .  div_types
 .  sp -\\n[line_count]
-.  in +\\n[max_line_len]u
+.  in +\\n[max_type_len]u+1m
 .  div_names
-.  in   \" max_line_len
+.  in   \" max_type_len
 .  br
-.  nop \ \\*[right];
-.  in   \" param_indent (from gpro_start)
-.  gpro_remove_registers
+.  nop  \\h'-2m'
+.  nop \\*[right]\c
+.  if \\n[.$]>0 .nop \\ \\fI\\$1\\fP\c
+\\&;
+.  in   \" param_indent (from cdef_start)
+.  cdef_remove_registers
+..
+.\"
+.\"
+.\" """"""""""""""""""""""""""""""""""""""""""""
+.\" cli_prototype and supporting macros follow:
+.\" """"""""""""""""""""""""""""""""""""""""""""
+.\"
+.\" Search a string for first occurence of a delimiter
+.\" $1 name of variable to which the value is returned
+.\" $2 value to search
+.\" $3 delimiter for which to search
+.\"
+.\" We use the prefix 'gcp_' for the return register name to lessen
+.\" the chances of a name collision.
+.de get_char_position
+.  ds gcp_position \\$1
+.  ds value \\$2
+.  ds delimiter \\$3
+.\" start with cleared return value
+.  nr \\*[gcp_position] -1
+.  nr pos 0
+.  while 1 \{\
+.    ds remains \\*[value]
+.    substring remains \\n[pos]
+.    length rlen \\*[remains]
+.    if \\n[rlen]<2 .break
+.    ds cchar \\*[remains]
+.    substring cchar 0 0
+.    if '\\*[cchar]'\\*[delimiter]' \{\
+.       nr \\*[gcp_position] \\n[pos]
+.       break
+.    \}
+.    nr pos +1
+.  \}
+..
+.\" Macro returning values in strings whose names are in $1 and $2
+.\" $1 left of split (or entire value if delimiter not found)
+.\" $2 right of split
+.\" $3 value to split
+.\" $4 (optional, default ':') delimiter on which to split
+.\"
+.\" We use the prefix 'sa_' for the return register names to lessen
+.\" the chances of a name collision.
+.de split_arg
+.  ds sa_left \\$1
+.  ds sa_right \\$2
+.  ds value \\$3
+.\" default value for optional 4th argument
+.  ds sa_delim :
+.  if \\n[.$]>3 .ds sa_delim \\$4
+.\" start with cleared return values
+.  ds \\*[sa_left]
+.  ds \\*[sa_right]
+.\"
+.  nr cpos -1
+.  get_char_position cpos \\*[value] \\*[sa_delim]
+.  ie \\n[cpos]>0 \{\
+.    ds \\*[sa_left] \\*[value]
+.    substring \\*[sa_left] 0 \\n[cpos]-1
+.    ds \\*[sa_right] \\*[value]
+.    substring \\*[sa_right] \\n[cpos]+1
+.  \}
+.  el .ds \\*[sa_left] \\*[value]
+..
+.de cli_arg_opt
+.  ds left
+.  ds right
+.  split_arg left right \\$1
+.  nop \\fB\\*[left]\\fP \\fI\\*[right]\\fP
+..
+.de cli_arg
+.  ds arg \\$1
+.  ds char_one \\$1
+.  substring char_one 0 0
+.  \" recognize and don't change if first character is a dot (.)
+.  ie |\\*[char_one].|\.| \\*[arg] \\c
+.  el \{\
+.    \" get string after prefix
+.    ds remainder \\$1
+.    substring remainder 1
+.    \" all italics if '@'
+.    ie |\\*[char_one]|@| .nop \\fI\\*[remainder]\\fP
+.    el \{\
+.      ie '\\*[char_one]'!' \{\
+.         cli_arg_opt \\*[remainder]
+.      \}
+.      \" no special prefix, write entire argument as-is
+.      el .nop \\*[arg] \\c
+.    \}
+.  \}
+..
+.\" @ prefix for a user-supplied value (in italics)
+.\" ? prefix for optional argument (enclose with []
+.\" ! prefix for verbatim argument value (-a) (in bold)
+.\"    !-a        for toggle or flag option taking no argument
+.\"    !-b:value  for option -a taking a value (value)
+.de cli_prototype
+.  nr nindent \\n[.i]+\\n[.k]
+.  br
+.  sp -1
+.  in \\n[nindent]u
+.  nr oHY \\n[.hy]
+.  nr oAD \\n[.j]
+.  hy 0
+.  ad l  \" set adjustment mode to 'l' (left justified)
+.  while \\n(.$>0 \{\
+.    ds char_one \\$1
+.    substring char_one 0 0
+.    ie |\\*[char_one].|\.| .print_arg "\\$1"
+.    el \{\
+.      ie |\\*[char_one]|?| \{\
+.         ds subarg \\$1
+.         substring subarg 1
+[\\c
+.         cli_arg \\*[subarg] \\c
+\h'-1m']
+.      \}
+.      el \{\
+.        cli_arg "\\$1" \\c
+.      \}
+.    \}
+.    shift
+.  \}
+.  in
+.  ad \\n[oAD]
+.  hy \\n[oHY]
+.  br
 ..
