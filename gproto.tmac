@@ -1,16 +1,26 @@
 .\" -*- mode:nroff -*-
-.\" gproto.tmac
-.\" Starts a c definition, like a function, enum, or struct
-.de cdef_start
+.de gpro_remove_registers
+.  rr param_indent oldHY oldAD line_count max_line_len
+.  rm type name
+.  rm enclosure left right separator end_glyph
+.  rm div_args div_types div_names
+..
+.de gpro_start
 .  ds type \\$1
 .  ds name \\$2
+.\" Determine enclosing glyphs
 .  ie \\n[.$]>2 .ds enclosure \\$3
 .  el .ds enclosure ()
-.  ie \\n[.$]>3 .ds terminator \\$4
-.  el .ds terminator ,
 .  ds left \\*[enclosure]
 .  substring left 0 0
+.  ds right \\*[enclosure]
+.  substring right 1 1
+.\" Determine member/argument separator
+.  ie \\n[.$]>3 .ds separator \\$4
+.  el .ds separator ,
+.\" Print type and name
 .  nop \\fB\\*[type]\\fP \\fI\\*[name]\\fP \\*[left] \\c
+.\" Save horizontal position as indent value
 .  nr param_indent \\n[.i]+\\n[.k]
 .  br
 .  sp -1
@@ -19,152 +29,60 @@
 .  nr oldAD \\n[.j]
 .  hy 0
 .  ad l
+.\" setup accumulator registers/diversions
+.  nr line_count 0
+.  nr max_line_len 0
+.  di div_names
+.  di
+.  di div_types
+.  di
+.  di div_args
+.  di
 ..
-.\" Add arguments between .start_c_def and .end_c_def
-.de cdef_arg
+.de gpro_arg
+.  ie \\n[.$]>2 .ds end_glyph \\ 
+.  el .ds end_glyph \\*[separator]
 .  ds type \\$1
 .  ds name \\$2
-.  ds end
-.  length nlen \\*[name]
-.  ie \\n[nlen]>0 .ds name \ \\fI\\*[name]\\fP
-.  el .ds name
-.  if \\n[.$]<3 .ds end \\*[terminator]
-.  nop \\fB\\*[type]\\fP\\*[name]\\*[end] \\c
-.  if risolate  .br
-..
-.\" finish the definition, restore environment to previous state
-.de cdef_end
-.  ds right \\*[enclosure]
-.  substring right 1 1
-.  ie \\n[.$]>0 .ds typename \ \\fI\\$1\\fP
-.  el .ds typename
-.  if risolate \\h'-3'
-.  nop \\*[right]\\*[typename];
-.  ad \\n[oldAD]
-.  hy \\n[oldHY]
-.  in
-.  rm enclosure left right typename
-.  rr isolate oldAD oldHY
-..
-.\" Search a string for first occurence of a delimiter
-.\" $1 name of variable to which the value is returned
-.\" $2 value to search
-.\" $3 delimiter for which to search
-.\"
-.\" We use the prefix 'gcp_' for the return register name to lessen
-.\" the chances of a name collision.
-.de get_char_position
-.  ds gcp_position \\$1
-.  ds value \\$2
-.  ds delimiter \\$3
-.\" start with cleared return value
-.  nr \\*[gcp_position] -1
-.  nr pos 0
-.  while 1 \{\
-.    ds remains \\*[value]
-.    substring remains \\n[pos]
-.    length rlen \\*[remains]
-.    if \\n[rlen]<2 .break
-.    ds cchar \\*[remains]
-.    substring cchar 0 0
-.    if '\\*[cchar]'\\*[delimiter]' \{\
-.       nr \\*[gcp_position] \\n[pos]
-.       break
-.    \}
-.    nr pos +1
-.  \}
-..
-.\" Macro returning values in strings whose names are in $1 and $2
-.\" $1 left of split (or entire value if delimiter not found)
-.\" $2 right of split
-.\" $3 value to split
-.\" $4 (optional, default ':') delimiter on which to split
-.\"
-.\" We use the prefix 'sa_' for the return register names to lessen
-.\" the chances of a name collision.
-.de split_arg
-.  ds sa_left \\$1
-.  ds sa_right \\$2
-.  ds value \\$3
-.\" default value for optional 4th argument
-.  ds sa_delim :
-.  if \\n[.$]>3 .ds sa_delim \\$4
-.\" start with cleared return values
-.  ds \\*[sa_left]
-.  ds \\*[sa_right]
-.\"
-.  nr cpos -1
-.  get_char_position cpos \\*[value] \\*[sa_delim]
-.  ie \\n[cpos]>0 \{\
-.    ds \\*[sa_left] \\*[value]
-.    substring \\*[sa_left] 0 \\n[cpos]-1
-.    ds \\*[sa_right] \\*[value]
-.    substring \\*[sa_right] \\n[cpos]+1
-.  \}
-.  el .ds \\*[sa_left] \\*[value]
-..
-.de cli_arg_opt
-.  ds left
-.  ds right
-.  split_arg left right \\$1
-.  nop \\fB\\*[left]\\fP \\fI\\*[right]\\fP
-..
-.de cli_arg
-.  ds arg \\$1
-.  ds char_one \\$1
-.  substring char_one 0 0
-.  \" recognize and don't change if first character is a dot (.)
-.  ie |\\*[char_one].|\.| \\*[arg] \\c
-.  el \{\
-.    \" get string after prefix
-.    ds remainder \\$1
-.    substring remainder 1
-.    \" all italics if '@'
-.    ie |\\*[char_one]|@| .nop \\fI\\*[remainder]\\fP
-.    el \{\
-.      ie '\\*[char_one]'!' \{\
-.         cli_arg_opt \\*[remainder]
-.      \}
-.      \" no special prefix, write entire argument as-is
-.      el .nop \\*[arg] \\c
-.    \}
-.  \}
-..
-.\" @ prefix for a user-supplied value (in italics)
-.\" ? prefix for optional argument (enclose with []
-.\" ! prefix for verbatim argument value (-a) (in bold)
-.\"    !-a        for toggle or flag option taking no argument
-.\"    !-b:value  for option -a taking a value (value)
-.de cli_prototype
-.  nr nindent \\n[.i]+\\n[.k]
+'\" Collect data for stacked
+'\" NOTE: the '\!' in diversions preserve the newline
+'\" push the environment to prevent diversion partial lines:
+.  ev @inarg
+.  da div_types
+\\! \\fB\\*[type]\\fP
 .  br
-.  sp -1
-.  in \\n[nindent]u
-.  nr oHY \\n[.hy]
-.  nr oAD \\n[.j]
-.  hy 0
-.  ad l  \" set adjustment mode to 'l' (left justified)
-.  while \\n(.$>0 \{\
-.    ds char_one \\$1
-.    substring char_one 0 0
-.    ie |\\*[char_one].|\.| .print_arg "\\$1"
-.    el \{\
-.      ie |\\*[char_one]|?| \{\
-.         ds subarg \\$1
-.         substring subarg 1
-[\\c
-.         cli_arg \\*[subarg] \\c
-\h'-1m']
-.      \}
-.      el \{\
-.        cli_arg "\\$1" \\c
-.      \}
-.    \}
-.    shift
-.  \}
-.  in
-.  ad \\n[oAD]
-.  hy \\n[oHY]
+.  di
+.  da div_names
+\\! \\fI\\*[name]\\fP\\*[end_glyph]
 .  br
+.  di
+'\" Diversion for running
+.  da div_args
+\\fB\\*[type]\\fP\ \\fI\\*[name]\\fP\\*[end_glyph]
+.  br
+.  di
+.  ev
+'\" Update cumulative values:
+.  nr line_count +1
+.  nr cur_line_len \\w'\\$1 '
+.  if \\n[cur_line_len]>\\n[max_line_len] .nr max_line_len \\n[cur_line_len]
 ..
-
+.de gpro_end
+.  div_args
+\\*[right];
+.  br
+.  in   \" param_indent (from gpro_start)
+.  gpro_remove_registers
+..
+.de gpro_end_stacked
+.\" print in columns, types then names
+.  div_types
+.  sp -\\n[line_count]
+.  in +\\n[max_line_len]u
+.  div_names
+.  in   \" max_line_len
+.  br
+.  nop \ \\*[right];
+.  in   \" param_indent (from gpro_start)
+.  gpro_remove_registers
+..
