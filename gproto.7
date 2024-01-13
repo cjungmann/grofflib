@@ -1,166 +1,33 @@
 .TH gproto.tmac 7 2023-12-26
+.rn In_Main_Source 1
 .mso gproto.tmac
+.so gproto.7.d/prototypes.7
 .SH NAME
-gproto.tmac
-\- Groff macros to generate prototypes for command line and c-language functions
+.B gproto.tmac
+\- Groff macros to style and format arguments for man pages
 .SH SYNOPSIS
+.PP
 .B .mso gproto.tmac
-
-.B .cdef_start
-.cli_prototype @type @name ?@enclosures ?@terminator
-.B .cdef_arg
-.cli_prototype @type @name ?last
-.B .cdef_end
-.cli_prototype ?@typedef_name
-
-.B .cli_prototype
-.cli_prototype ?@@italics ?@!bold ?@?brackets ?@!-a ?@!-b:value
-
-.B .nr isolate 1
+.PP
+.gp_cli_prototype
+.PP
+.gp_cdef_start
+.gp_cdef_arg
+.gp_cdef_end
+.gp_cdef_end_stacked
 .SH DESCRIPTION
 .PP
-Construct prototypes for CLI (command line interface) commands and
-language structures like functions, enumeration, and structures.
-.PP
-If you are reading this man page, the
-.B gproto.tmac
-macro file should also be installed in the proper directory.
-If not, follow the instructions in the README.me file for
-installation.
-.SS Argument Formatting
-.PP
-One benefit of the macros is that the arguments are aligned at an
-appropriate left indentation.
-By default the arguments fill as much of a line as possible before
-breaking to the next line.
-.TP
-.B One argument per line
-Set number register
-.B isolate
-to any value to flag output for one argument per line.
-This will make your
-.BR structs " and " enums
-follow the conventional form.
-.TP
-.B Formatting Hint
-Use non-breaking spaces in the
-.B type
-argument when the type includes spaces.
-This will keep the type declaration all on the same line.
-The examples below show how this is done.
-
-.SS CLI Prototypes
-.PP
-Use the
-.B cli_prototype
-macro to style and format the arguments of the prototype.
-This macro should follow the command name, the length of which is
-used to establish an indent length to format the arguments.
-.PP
-Arguments to the
-.B cli_prototype
-macro use prefixes to indicate the desired style:
-.TS
-tab(|);
-l l.
-@value|user-supplied value (in italics)
-?argument|optional argument (enclosed in square brackets)
-!-a|verbatim argument (in bold)
-!-b:value|verbatim option in bold, \fBvalue\fP in italic
-.TE
-.PP
-Use
-.B cli_prototype
-as follows:
-.IP
-.EX
-\&.B command
-\&.cli_prototype @required_value !-t:type ?!-v ?!-abcd !--help
-.EE
-.PP
-to get the following result:
-.IP
-.B command
-.cli_prototype @required_value !-t:type ?!-v ?!-abcd !--help
-.SS Language Object Prototype
-.PP
-The syntax was designed to support constructing function, enum, and
-struct C-language defintions.
-It should be basic enough to support other languages as well.
-.PP
-The full invocation includes three macros, the second of which,
-.BR cdef_arg ,
-is to be used for each supported parameter.
-.TP 4
-.B Function Example
-The following code:
-.IP "" 8
-.EX
-\&.cdef_start int vsnprintf
-\&.cdef_arg \(dqchar\\ **\(dq str
-\&.cdef_arg size_t size
-\&.cdef_arg \(dqconst\\ char\\ *restrict\(dq format
-\&.cdef_arg va_list ap last
-\&.cdef_end
-.EE
-.IP "" 4
-results in:
-.IP "" 8
-.cdef_start int vsnprintf 
-.cdef_arg "char\ **" str
-.cdef_arg size_t size
-.cdef_arg "const\ char\ *restrict" format
-.cdef_arg va_list ap last
-.cdef_end
-'\"
-.TP 4
-.B Struct Example
-The following code:
-.IP "" 8
-.EX
-\&.nr isolate 1
-\&.cdef_start "typedef\\ struct" {} ;
-\&.cdef_arg "const\\ char\\ *" id
-\&.cdef_arg int count
-\&.cdef_arg "const\\ char\\ **" names
-.B \&.\(rs\(dq No \(dqlast\(dq because we want the \(aq;\(aq after the last member
-\&.cdef_arg "struct\\ mystruct\\ *" object
-\&.cdef_end PERSON ;
-.EE
-.IP "" 4
-results in:
-.IP "" 8
-.nr isolate 1
-.cdef_start "typedef\ struct" "person" {} ;
-.cdef_arg "const\ char\ *" id
-.cdef_arg int count
-.cdef_arg "const\ char\ **" names
-.cdef_arg "struct\ mystruct\ *" object
-.cdef_end PERSON
-
-
-.TP 4
-.B Enum Example
-The following code:
-.IP "" 8
-.EX
-\&.ds isolate
-\&.cdef_start enum {} ,
-\&.cdef_arg FIRST =0
-\&.cdef_arg SECOND
-\&.cdef_arg THIRD
-\&.cdef_arg FOURTH "" last
-\&.cdef_end ENUM
-.EE
-.IP "" 4
-results in:
-.IP "" 8
-.nr isolate 1
-.cdef_start enum "" {} ,
-.cdef_arg FIRST =0
-.cdef_arg SECOND
-.cdef_arg THIRD
-.cdef_arg FOURTH "" last
-.cdef_end ENUM
-
+These macros help create consistently styles and helpfully formatted
+command usage and function prototypes for the Synopsis section of a
+man page.
+.
+.so gproto.7.d/desc_cli_prototype.7
+.
+.so gproto.7.d/desc_cdefs.7
+.so gproto.7.d/desc_cdef_start.7
+.so gproto.7.d/desc_cdef_arg.7
+.so gproto.7.d/desc_cdef_end.7
+.so gproto.7.d/desc_cdef_end_stacked.7
+.
+.so gproto.7.d/examples.7
 
