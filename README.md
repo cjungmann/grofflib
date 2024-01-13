@@ -49,3 +49,6 @@ This set of five macros enables an easy implementation of
 pleasantly-formatted prototypes for use in the **SYNOPSIS** section
 of a man page.  Look at the man page for usage instructions:
 `gproto(7)`.
+
+![Example](example3.png)
+
