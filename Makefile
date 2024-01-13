@@ -12,7 +12,7 @@ install:
 	# install the software
 	install -D --mode=775 $(CONTENT) $(TMAC_DIR)
 	soelim $(MANPAGE) | gzip -c - > $(PREFIX)/share/man/man7/$(MANPAGE).gz
-	mandb
+	mandb -q
 
 uninstall:
 	rm -f $(TMAC_DIR)/$(CONTENT)
