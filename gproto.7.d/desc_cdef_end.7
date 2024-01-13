@@ -1,0 +1,19 @@
+.so fork.tmac
+.SS MACRO cdef_end
+.PP
+Use a
+.I run-on style
+to print the parameters, putting as many parameters as fit on each
+line.
+The last parameter will be followed by the second character of the
+.I enclosures
+string, and then by a semicolor
+.RB \(lq ; \(rq.
+.PP
+.gp_cdef_end
+.IP
+The optional
+.I typedef_name
+parameter specifies a string (which should be a word) that will be
+printed between the final enclosure character and the semicolon.
+

@@ -1,0 +1,54 @@
+.so fork.tmac
+.SS MACRO cli_prototype
+.PP
+Use the
+.B cli_prototype
+macro to style and format the arguments of a prototype for a command
+line interface program.
+This macro should be used immediately following the command name,
+the length of which is used to establish an indent length to format
+the arguments.
+.\"
+.PP
+.gp_cli_prototype
+.\"
+Arguments to the
+.B cli_prototype
+macro use prefixes to indicate the desired style:
+.TS
+tab(|);
+l l.
+\fB@\fPvalue|user-supplied value (in italics)
+\fB?\fPargument|optional argument (enclosed in square brackets)
+\fB!\fP-a|verbatim argument (in bold)
+\fB!\fP-b\fB:\fPvalue|verbatim option in bold, \fBvalue\fP in italic
+.TE
+.PP
+Note that the
+.B ?
+prefix can go in front of any argument to enclose it in brackets.
+.\"
+.PP
+For example, the following groff code:
+.IP
+.EX
+\&.B command
+\&.cli_prototype @required_argument \\
+       !required_verbatim    \\
+       !-r:required_option   \\
+       ?@optional_argument   \\
+       ?!-o:option           \\
+       ?!--option:value      \\
+       ?!-abcd ?!-v ?!--help
+.EE
+.PP
+will generate this prototype:
+.IP
+.B command
+.cli_prototype @required_argument \
+       !required_verbatim    \
+       !-r:required_option   \
+       ?@optional_argument   \
+       ?!-o:option           \
+       ?!--option:value      \
+       ?!-abcd ?!-v ?!--help

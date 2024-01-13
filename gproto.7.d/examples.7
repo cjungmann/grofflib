@@ -1,0 +1,145 @@
+.so fork.tmac
+.SH EXAMPLES
+.PP
+In the following examples, the spaces are escaped in the
+.I type
+arguments that consist of multiple words.
+This prevents groff from inserting a line break between the
+elements of the
+.I type
+declaration.
+.SS Function Example
+.PP
+To print a function prototype like this:
+.IP
+.cdef_start int vsnprintf 
+.cdef_arg "char\ **" str
+.cdef_arg size_t size
+.cdef_arg "const\ char\ *restrict" format
+.cdef_arg va_list ap last
+.cdef_end
+.PP
+Use the
+.B cdef
+macros as follows:
+.IP
+.EX
+\&.cdef_start int vsnprintf
+\&.cdef_arg \(dqchar\(rs **\(dq str
+\&.cdef_arg size_t size
+\&.cdef_arg \(dqconst\(rs char\(rs *restrict\(dq format
+\&.cdef_arg va_list ap last
+\&.cdef_end
+.EE
+.TP
+.B NOTES:
+The
+.IR enclosure " and " terminator
+arguments are omitted because they are not necessary when
+defining a function.
+.IP
+The final
+.B cdef_arg
+includes the
+.I last
+argument to prevent printing the comma that otherwise would follow.
+'\"
+.SS Struct Example
+.PP
+To print a struct declaration like this:
+.PP
+.cdef_start "typedef\ struct" "person" {} ;
+.cdef_arg "const\ char\ *" id
+.cdef_arg int count
+.cdef_arg "const\ char\ **" names
+.cdef_arg "struct\ mystruct\ *" object
+.cdef_end_stacked PERSON
+.PP
+Use the
+.B cdef
+macros as follows:
+.IP
+.EX
+\&.cdef_start \(dqtypedef\(rs struct\(dq person {} ;
+\&.cdef_arg \(dqconst\(rs char\(rs *\(dq id
+\&.cdef_arg int count
+\&.cdef_arg \(dqconst\(rs char\(rs **\(dq names
+\&.cdef_arg \(dqstruct\(rs mystruct\(rs *\(dq object
+\&.cdef_end_stacked PERSON
+.EE
+.TP
+.B NOTES:
+Both the
+.IR enclosures " and " terminator
+arguments are specified for the
+.B cdef_start
+macro because they are different from the characters used when
+declaring a function prototype.
+.IP
+We
+.I DO NOT
+include the
+.I last
+argument for the final
+.B cdef_arg
+because all members of a struct must be terminated with the
+.RB \(lq ; \(rq.
+.IP
+We use the
+.B cdef_end_stacked
+macro to print each member on it own line, as is common with
+struct declarations.
+.IP
+Notice the effect of the included
+.I typedef_name
+argument of the
+.B cdef_end_stacked
+macro.
+.SS Enum Example
+.PP
+To print an enum declaration like this:
+.IP
+.cdef_start "typedef\ enum" "" {} ,
+.cdef_arg FIRST =0
+.cdef_arg SECOND
+.cdef_arg THIRD
+.cdef_arg FOURTH "" last
+.cdef_end_stacked ETYPE
+.PP
+Use the
+.B cdef
+macros as follows:
+.IP
+.EX
+\&.cdef_start \(dqtypedef\(rs enum\(dq \(dq\(dq {} ,
+\&.cdef_arg FIRST =0
+\&.cdef_arg SECOND
+\&.cdef_arg THIRD
+\&.cdef_arg FOURTH \(dq\(dq last
+\&.cdef_end_stacked ENUM
+.EE
+.TP
+.B NOTES
+Use a empty-string
+.I name
+parameter so the
+.IR enclosures " and " terminator
+parameters are in position 3 and 4.
+.IP
+We could have omitted the
+.RB \(lq , \(rq
+of the
+.B cdef_start
+macro because it is the default terminator value.
+.IP
+The final
+.BR cdef_arg ,
+which should not be followed by a comma,
+includes an empty string placeholder for the
+.I name
+parameter before the
+.I last
+argument.
+
+
+

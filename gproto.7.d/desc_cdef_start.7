@@ -1,0 +1,35 @@
+.so fork.tmac
+.SS MACRO cdef_start
+.PP
+Use this macro to begin defining a prototype.
+.PP
+.gp_cdef_start
+.IP
+The first parameters to
+.B cdef_start
+are the
+.IR type ,
+which includes the data type and any modifiers, followed by the
+.I name
+of the parameter.
+.IP
+.I enclosures
+is a two-character string with the characters that start and end the
+collection of parameters.
+The default
+.I enclosures
+value is
+.RB \(lq () \(rq,
+but
+.RB \(lq {} \(rq
+may be substituted for other declaration types (structs and enums).
+.IP
+The
+.I terminator
+parameter is the character to be used to separate the parameters.
+The default value is
+.RB \(lq , \(rq,
+but it can be set to
+.RB \(lq ; \(rq
+for structs.
+

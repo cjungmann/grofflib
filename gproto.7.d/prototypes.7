@@ -1,0 +1,25 @@
+.de gp_cli_prototype
+.  B .cli_prototype
+.  cli_prototype ?@@italics ?@!bold ?@?brackets ?@!-a ?@!-b:value
+..
+.
+.de gp_cdef_start
+.  B .cdef_start
+.  cli_prototype @type @name ?@enclosures ?@terminator
+..
+.
+.de gp_cdef_arg
+.  B .cdef_arg
+.  cli_prototype @type @name ?@last
+..
+.
+.de gp_cdef_end
+.  B .cdef_end
+.  cli_prototype ?@typedef_name
+..
+.
+.de gp_cdef_end_stacked
+.  B .cdef_end_stacked
+.  cli_prototype ?@typedef_name
+..
+

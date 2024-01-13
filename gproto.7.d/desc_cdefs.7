@@ -1,0 +1,43 @@
+.so fork.tmac
+.SS CDEF MACROS OVERVIEW
+.PP
+This set of macros produces C-style function prototypes for man pages.
+With small tweaks, the macros are also suitable for declaring
+.IR structs " and " enums " along with " functions ,
+as well as
+.I typedefs
+of any of the above.
+.PP
+For convenience, this document will refer to the C declarations as
+.IR prototypes ,
+as they are meant to reside in the SYNOPSIS section.
+.PP
+The process for entering a prototype is:
+.TS
+tab(|);
+lb lx.
+cdef_start|T{
+Initializes the environment, prints the
+.IR type ", " name ,
+and the first character of the
+.I "enclosure pair"
+string.
+T}
+
+cdef_arg|T{
+Used repeatedly to collect
+.IR type " and " name
+pairs into temporary storage (diversions).
+T}
+
+T{
+cdef_end \fRor\fP
+.br
+cdef_end_stacked
+T}|T{
+Print the formatted arguments in the desired format,
+terminate the prototype with the
+.I typename
+if it was specified.
+T}
+.TE

@@ -1,0 +1,35 @@
+.so fork.tmac
+.SS MACRO cdef_arg
+.PP
+Use this macro to declare each member of the function or other
+declaration.
+.PP
+.gp_cdef_arg
+.IP
+The first parameters to
+.B cdef_arg
+are the
+.IR type ,
+which includes the data type and any modifiers, followed by the
+.I name
+of the parameter.
+The
+.I name
+parameter may be omitted for declarations like an enum.
+.IP
+The optional parameter,
+.BR last ,
+is not evaluated by value, just by inclusion, and it indicates that
+the argument should not use the terminator character defined in the
+.B cdef_start
+macro.
+Use this to prevent a comma from following the last parameter in
+a function prototype.
+.IP
+If specifying the
+.B last
+parameter, be sure a value is also entered for the
+.B name
+parameter, even if it is only an empty string, as would be the case
+for an enum.
+

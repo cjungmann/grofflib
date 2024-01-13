@@ -1,0 +1,18 @@
+.so fork.tmac
+.SS MACRO cdef_end_stacked
+.PP
+Use a
+.I stacked style
+to print the parameters, printing each parameter on its own line
+with the argument names, if provided, aligned for easier reading.
+The last parameter will be followed by the second character of the
+.I enclosures
+string, and then by a semicolor
+.RB \(lq ; \(rq.
+.PP
+.gp_cdef_end_stacked
+.IP
+The optional
+.I typedef_name
+parameter specifies a string (which should be a word) that will be
+printed between the final enclosure character and the semicolon.
