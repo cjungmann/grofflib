@@ -1,13 +1,4 @@
 .\" -*- mode:nroff -*-
-.\" Removes registers and strings/diversions that were created
-.\" during the running of cdef_start sequence.  Trying to leave
-.\" the environment like we found it.
-.de cdef_remove_registers
-.  rr param_indent oldHY oldAD line_count max_type_len
-.  rm type name
-.  rm enclosure left right separator end_glyph
-.  rm div_args div_types div_names
-..
 .de cdef_start
 .  ds type \\$1
 .  ds name \\$2
@@ -35,6 +26,9 @@
 .\" setup accumulator registers/diversions
 .  nr line_count 0
 .  nr max_type_len 0
+.  nr max_name_len 0
+.  ds last_type
+.  ds last_name
 .  di div_names
 .  di
 .  di div_types
@@ -42,74 +36,143 @@
 .  di div_args
 .  di
 ..
+.\" Used by both cdef_end macros to consistently clean up variables
+.de cdef_reset
+.  hy \\n[oldHY]
+.  ad \\n[oldAD]
+.  in
+.  rr oldHY oldAD
+.  rr line_count max_type_len max_name_len
+.  rm enclosure left right separator
+.  rm last_type last_name
+.  rm div_names div_types div_args
+..
 .de cdef_arg
-.  ie \\n[.$]>2 .ds end_glyph \\ 
-.  el .ds end_glyph \\*[separator]
-.  ds type \\$1
-.  ds name \\$2
-.  nr len_type \\w'\\$1'
-.  nr len_name \\w'\\$2'
-.  length chars_name \\$2
-.br
-'\" Collect data for stacked
-'\" NOTE: the '\!' in diversions preserve the newline
-'\" push the environment to prevent diversion partial lines:
-.  ev @inarg
-.  da div_types
-\\! \\fB\\*[type]\\fP\c
-.  ie ((\\n[chars_name]==0) & (\\n[.$]<3)) .nop \\*[separator]
-.  el .nop \\ 
-.  br
-.  di
-.  da div_names
-.  ie \\n[chars_name] \{\
-\\! \\fI\\*[name]\\fP\c
-.    if \\n[.$]<3 .nop \\*[end_glyph]
-.  \}
-.  el \{\
+.\" Save previous type and name to diversions
+.  length tlen \\*[last_type]
+.  length nlen \\*[last_name]
+.  nr totlen \\n[tlen]+\\n[nlen]
+.  if \\n[totlen]>0 \{\
+.    ev div_arr
+.\" Append to run-on arguments diversion
+.    ie \\n[nlen]>0 \{\
+.      da div_args
+.        nop \\fB\\*[last_type]\\fP\ \\fI\\*[last_name]\\fP\\*[separator]\\c
+.        br
+.      di
+.    \}
+.    el \{\
+.      da div_args
+.        nop \\fB\\*[last_type]\\fP\\*[separator]\\c
+.        br
+.      di
+.    \}
+.\" Process the stacked output diversions
+.    nr line_count +1
+.    nr max_type_len \\n[max_type_len]>?\\w'\\*[last_type]'
+.    nr max_name_len \\n[max_name_len]>?\\w'\\*[last_name]'
+.    ie \\n[nlen]>0 \{\
+.      da div_types
+\\! \\fB\\*[last_type]\\fP
+.      br
+.      di
+.      da div_names
+\\! \\fI\\*[last_name]\\fP\\*[separator]
+.      br
+.      di
+.    \}
+.    el \{\
+.      da div_types
+\\! \\fB\\*[last_type]\\fP\\*[separator]
+.      br
+.      di
+.      da div_names
 \\!
+.      br
+.      di
+.    \}
+.    ev
 .  \}
-.  br
-.  di
-'\" Diversion for running
-.  da div_args
-.  if \\n[.$]>0 .nop \\fB\\*[type]\\fP\c
-.  if (\\n[.$]>1 & \\n[len_name]>0) .nop \\ \\fI\\*[name]\\fP\c
-.  if !\\n[.$]>2 .nop \\*[separator]\c
-.  br
-.  di
-.  ev
-'\" Update cumulative values:
-.  nr line_count +1
-.  nr max_type_len \\n[max_type_len]>?\\n[len_type]
-'\" Discard local variables
-.  rm type name end_glyph
-.  rr len_type len_name
+.\" After having saved previous values to diversions, now save
+.\" current type and name for next call or for cdef_end:
+.  ds last_type \\$1
+.  ie \\n[.$]>1 .ds last_name \\$2
+.  el .ds last_name
 ..
 .de cdef_end
+.  ds type
+.  if \\n[.$]>0 .ds type \\ \\fI\\$1\\fP
+.\" determine how last argument is terminated
+.  ie '\\*[separator]';' .ds cap ;\\*[right]\\*[type]
+.  el .ds cap \\*[right]\\*[type]
+.  length nlen \\*[last_name]
+.\" Add last parameter to the diversion:
+.  ev final
+.    ie \\n[nlen]>0 \{\
+.      da div_args
+.        nop \\fB\\*[last_type]\\fP\ \\fI\\*[last_name]\\fP\\*[cap];
+.        br
+.      di
+.    \}
+.    el \{\
+.      da div_args
+.        nop \\fB\\*[last_type]\\fP\\*[cap];
+.        br
+.      di
+.    \}
+.  ev
+.\" print out the completed diversion
 .  div_args
-.  nop \\h'-2m'
-.  nop \\*[right]\\c
-.  if \\n[.$]>0 .nop \\ \\fI\\$1\\fP\\c
-\\&;
-.  br
-.  in   \" param_indent (from cdef_start)
-.  cdef_remove_registers
+.\"
+.  cdef_reset
 ..
 .de cdef_end_stacked
-.\" print in columns, types then names
+.\" determine how last argument is terminated
+.  ds type
+.  if \\n[.$]>0 .ds type \\ \\fI\\$1\\fP
+.  ie '\\*[separator]';' .ds cap ;
+.  el .ds cap
+.  length nlen \\*[last_name]
+.\" add last_type and last_name to their divs:
+.  ev final
+.    ie \\n[nlen]>0 \{\
+.      da div_types
+\\! \\fB\\*[last_type]\\fP
+.      di
+.      da div_names
+\\! \\fI\\*[last_name]\\fP\\*[cap]
+.      di
+.    \}
+.    el \{\
+.      da div_types
+\\! \\fB\\*[last_type]\\fP\\*[cap]
+.      di
+.      da div_names
+\\!
+.      di
+.    \}
+.  ev
+.\" print column of argument types:
 .  div_types
-.  sp -\\n[line_count]
+.\" move to the name line
+.  sp -\\n[line_count]-1
+.\" indent-print for left-aligned names:
+.  nr max_type_len \\n[max_type_len]>?\\w'\\*[last_type]'
 .  in +\\n[max_type_len]u+1m
-.  div_names
-.  in   \" max_type_len
-.  br
-.  nop  \\h'-2m'
-.  nop \\*[right]\c
-.  if \\n[.$]>0 .nop \\ \\fI\\$1\\fP\c
-\\&;
-.  in   \" param_indent (from cdef_start)
-.  cdef_remove_registers
+.    div_names
+.  in
+.  nop \\h'-2m'
+.  nop \\*[right]\\*[type];
+.\"
+.  cdef_reset
+..
+.de cdef_voidfunc
+.  ds name \\$1
+.  ds type void
+.  if \\n[.$]>1 .ds type \\$2
+.  cdef_start \\*[type] \\*[name]
+.  cdef_arg void
+.  cdef_end
 ..
 .\"
 .\"
