@@ -1,0 +1,62 @@
+.so gproto.tmac
+.TH bogus 1
+.SH DESCRIPTION
+.cdef_start int main
+.cdef_arg int argc
+.cdef_arg "const char **" argv
+.cdef_end
+.PP
+.cdef_start int fprintf
+.cdef_arg "const\ char\ *" buffer
+.cdef_arg int buff_len
+.cdef_arg "const\ char\ *" format
+.cdef_arg double cost
+.cdef_arg long cooks
+.cdef_end
+.
+.PP
+.cdef_start int fprintf
+.cdef_arg int filehandle
+.cdef_arg "const\ char\ *" buffer
+.cdef_arg int buff_len
+.cdef_arg "const\ char\ *" format
+.cdef_arg double cost
+.cdef_arg long cooks
+.cdef_end_stacked
+.
+.PP
+.cdef_start struct bozo {} ;
+.cdef_arg "const\ char\ *" birth_name
+.cdef_arg "const\ char\ *" stage_name
+.cdef_arg "const\ char\ *" sponsor
+.cdef_arg "const\ char\ *" circus
+.cdef_arg "date" birthday
+.cdef_end_stacked
+.
+.PP
+.cdef_start "typedef struct" person
+.cdef_arg int ID
+.cdef_arg "const\ char\ *" first_name
+.cdef_arg "const\ char\ *" middle_name
+.cdef_arg "const\ char\ *" last_name
+.cdef_end_stacked "PERSON"
+.
+.PP
+.cdef_start "typedef int" "(*myfunc)"
+.cdef_arg int file
+.cdef_arg "const\ char\ *" name
+.cdef_end
+.
+.PP
+.cdef_start enum return_values {} ,
+.cdef_arg SUCCESS =0
+.cdef_arg BAD_ARG
+.cdef_arg INVALID
+.cdef_arg BOGUS
+.cdef_end_stacked
+.
+.PP
+.cdef_start void test
+.cdef_arg void
+.cdef_end
+
