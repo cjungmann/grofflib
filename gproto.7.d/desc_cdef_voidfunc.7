@@ -1,0 +1,18 @@
+.so fork.tmac
+.SS MACRO cdef_voidfunc
+.PP
+This macro is a shortcut for making a function with an empty
+(void) argument list.
+.PP
+.gp_cdef_voidfunc
+.TP
+.I name
+is the name of the function.
+.TP
+.I type
+is an optional return type string.  The default function return
+type is
+.BR void .
+As described in
+.BR cdef_start " and " cdef_arg ,
+consider using non-breaking spaces between words in this argument.

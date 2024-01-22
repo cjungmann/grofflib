@@ -16,7 +16,7 @@ To print a function prototype like this:
 .cdef_arg "char\ **" str
 .cdef_arg size_t size
 .cdef_arg "const\ char\ *restrict" format
-.cdef_arg va_list ap last
+.cdef_arg va_list ap
 .cdef_end
 .PP
 Use the
@@ -28,7 +28,7 @@ macros as follows:
 \&.cdef_arg \(dqchar\(rs **\(dq str
 \&.cdef_arg size_t size
 \&.cdef_arg \(dqconst\(rs char\(rs *restrict\(dq format
-\&.cdef_arg va_list ap last
+\&.cdef_arg va_list ap
 \&.cdef_end
 .EE
 .TP
@@ -37,12 +37,6 @@ The
 .IR enclosure " and " terminator
 arguments are omitted because they are not necessary when
 defining a function.
-.IP
-The final
-.B cdef_arg
-includes the
-.I last
-argument to prevent printing the comma that otherwise would follow.
 '\"
 .SS Struct Example
 .PP
@@ -76,15 +70,6 @@ arguments are specified for the
 macro because they are different from the characters used when
 declaring a function prototype.
 .IP
-We
-.I DO NOT
-include the
-.I last
-argument for the final
-.B cdef_arg
-because all members of a struct must be terminated with the
-.RB \(lq ; \(rq.
-.IP
 We use the
 .B cdef_end_stacked
 macro to print each member on it own line, as is common with
@@ -103,7 +88,7 @@ To print an enum declaration like this:
 .cdef_arg FIRST =0
 .cdef_arg SECOND
 .cdef_arg THIRD
-.cdef_arg FOURTH "" last
+.cdef_arg FOURTH
 .cdef_end_stacked ETYPE
 .PP
 Use the
@@ -115,7 +100,7 @@ macros as follows:
 \&.cdef_arg FIRST =0
 \&.cdef_arg SECOND
 \&.cdef_arg THIRD
-\&.cdef_arg FOURTH \(dq\(dq last
+\&.cdef_arg FOURTH
 \&.cdef_end_stacked ENUM
 .EE
 .TP
@@ -131,15 +116,6 @@ We could have omitted the
 of the
 .B cdef_start
 macro because it is the default terminator value.
-.IP
-The final
-.BR cdef_arg ,
-which should not be followed by a comma,
-includes an empty string placeholder for the
-.I name
-parameter before the
-.I last
-argument.
 
 
 

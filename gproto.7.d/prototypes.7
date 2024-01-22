@@ -10,14 +10,17 @@
 .
 .de gp_cdef_arg
 .  B .cdef_arg
-.  cli_prototype @type @name ?@last
+.  cli_prototype @type ?@name
 ..
 .
 .de gp_cdef_end
 .  B .cdef_end
 .  cli_prototype ?@typedef_name
 ..
-.
+.de gp_cdef_voidfunc
+.  B .cdef_voidfunc
+.  cli_prototype @name ?@type
+..
 .de gp_cdef_end_stacked
 .  B .cdef_end_stacked
 .  cli_prototype ?@typedef_name

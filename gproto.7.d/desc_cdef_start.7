@@ -2,34 +2,49 @@
 .SS MACRO cdef_start
 .PP
 Use this macro to begin defining a prototype.
+The optional arguments have default values that work for function
+definitions, but they can be replaced for other types of
+declarations.
 .PP
 .gp_cdef_start
-.IP
-The first parameters to
+.TP
+.I type
+is the return type or data type being defined.
+Prevent unexpected line breaks by using non-breaking spaces
+within this argument, or putting some keywords in a line before
+the
 .B cdef_start
-are the
-.IR type ,
-which includes the data type and any modifiers, followed by the
+macro.
+.TP
 .I name
-of the parameter.
-.IP
+is the name of the item being declared.
+.TP
 .I enclosures
-is a two-character string with the characters that start and end the
-collection of parameters.
-The default
-.I enclosures
-value is
-.RB \(lq () \(rq,
-but
-.RB \(lq {} \(rq
-may be substituted for other declaration types (structs and enums).
+is an optional two-character string that overrides the default
+value of
+.RB \(lq () \(rq.
+The characters are used to start and end the argument list.
+Structs and enums will set the argument to
+.RB \(lq {} \(rq.
+.TP
+.I terminator
+is the character that will mark the end of each argument.
+The default value is
+.RB \(lq , \(rq
+as would be used for a function.
+The other common terminator character is
+.RB \(lq ; \(rq.
 .IP
 The
 .I terminator
-parameter is the character to be used to separate the parameters.
-The default value is
-.RB \(lq , \(rq,
-but it can be set to
-.RB \(lq ; \(rq
-for structs.
+character also determines when the terminator is used.
+Parameters of a function declaration are separated by commas, and
+no terminator comes between the last parameter and the closing
+enclosure character.
+This arrangement also applies to enums, whose members are
+also separated by commas.
+.IP
+The members of a struct are terminated by a semicolon
+.RB \(lq ; \(dq,
+even the final member.
 
