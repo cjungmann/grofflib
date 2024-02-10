@@ -2,6 +2,7 @@
 .de cdef_start
 .  ds type \\$1
 .  ds name \\$2
+.  nr cdef_unindent \\n[.i]
 .\" Determine enclosing glyphs
 .  ie \\n[.$]>2 .ds enclosure \\$3
 .  el .ds enclosure ()
@@ -40,9 +41,10 @@
 .de cdef_reset
 .  hy \\n[oldHY]
 .  ad \\n[oldAD]
-.  in
+.  in \\n[cdef_unindent]u
 .  rr oldHY oldAD
 .  rr line_count max_type_len max_name_len
+.  rr cdef_unindent
 .  rm enclosure left right separator
 .  rm last_type last_name
 .  rm div_names div_types div_args
